@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { logDebug } from "./utils/debug";
 import { getTransactionTypeLabel } from "./utils/constants";
 
+const normalizeName = (name) =>
+  name?.trim().toLowerCase();
+
+
 function SectionTitle({ title, subtitle }) {
   return (
     <div className="mb-3">
@@ -35,6 +39,10 @@ function badgeClassByType(typeId) {
 
 function App() {
   const [tg, setTg] = useState(null);
+
+  // Form Error useState 
+  const [formErrors, setFormErrors] = useState([]);
+
 
   // Users
   const [userForm, setUserForm] = useState({
@@ -72,6 +80,7 @@ function App() {
       );
     } catch (e) {
       console.error("Error parsing initial_budgets:", e, raw);
+      return {};
     }
   });
 
@@ -81,8 +90,11 @@ function App() {
     if (!raw) return [];
     try {
       const parsed = JSON.parse(raw);
+
+      // 🔒 Estas son las que vinieron “iniciales” en la URL
       return parsed.map((st) => ({
         ...st,
+        is_initial: true, // <--- NUEVO
         transaction_type_id: Number(st.transaction_type_id),
         ideal_amount: Number(st.ideal_amount),
       }));
@@ -91,6 +103,18 @@ function App() {
       return [];
     }
   });
+
+  const normalizedNames = subtransactions.map((st) =>
+    normalizeName(st.name)
+  );
+
+  const duplicatedNames = normalizedNames.filter(
+    (name, index) =>
+      name &&
+      normalizedNames.indexOf(name) !== index
+  );
+
+  const hasDuplicateNames = duplicatedNames.length > 0;
 
   useEffect(() => {
     const webApp = window.Telegram?.WebApp;
@@ -150,12 +174,18 @@ function App() {
   };
 
   const handleAddSubtransaction = () => {
-    if (subtransactions.length >= 5) return;
     setSubtransactions((prev) => [
       ...prev,
-      { name: "", description: "", transaction_type_id: 1, ideal_amount: 0 },
+      {
+        name: "",
+        description: "",
+        transaction_type_id: -1,
+        ideal_amount: 0,
+        is_initial: false, // opcional pero recomendado
+      },
     ]);
   };
+
 
   const handleRemoveSubtransaction = (index) => {
     setSubtransactions((prev) => prev.filter((_, i) => i !== index));
@@ -201,9 +231,13 @@ function App() {
     });
 
     if (errors.length > 0) {
+      setFormErrors(errors); // 👈 ahora se muestran
       logDebug("VALIDATION ERRORS:\n" + errors.join("\n"));
       return;
     }
+
+    // si todo está bien, limpia errores
+    setFormErrors([]);
 
     const payload = {
       Users: {
@@ -214,6 +248,7 @@ function App() {
       },
       budgets: budgets,
       Subtransactions_Types: subtransactions,
+      action: urlAction,
     };
 
     logDebug("SENDING PAYLOAD: " + JSON.stringify(payload, null, 2));
@@ -362,92 +397,129 @@ function App() {
           </div>
 
           <div className="row g-3">
-            {subtransactions.map((st, index) => (
-              <div className="col-12" key={index}>
-                <div className="border rounded p-3">
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="fw-semibold">Tipo #{index + 1}</span>
-                      <span className={`badge ${badgeClassByType(st.transaction_type_id)}`}>
-                        {getTransactionTypeLabel(st.transaction_type_id)}
-                      </span>
+            {subtransactions.map((st, index) => {
+              const isEditMode = urlAction === "edit";
+              const isLocked = isEditMode && st.is_initial;
+
+              const current = normalizeName(st.name);
+              const isDuplicate = !!current && normalizedNames.indexOf(current) !== index;
+
+              return (
+                <div className="col-12" key={index}>
+                  <div className="border rounded p-3">
+                    <div className="d-flex align-items-center justify-content-between mb-2">
+                      <div className="d-flex align-items-center gap-2">
+                        <span className="fw-semibold">Tipo #{index + 1}</span>
+                        <span className={`badge ${badgeClassByType(st.transaction_type_id)}`}>
+                          {getTransactionTypeLabel(st.transaction_type_id)}
+                        </span>
+
+                        {isLocked && (
+                          <span className="badge text-bg-secondary">Inicial</span>
+                        )}
+                      </div>
+
+                      {subtransactions.length > 1 && (
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => handleRemoveSubtransaction(index)}
+                          disabled={isLocked}
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
 
-                    {subtransactions.length > 1 && (
-                      <button
-                        type="button"
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => handleRemoveSubtransaction(index)}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
+                    <div className="row g-3">
+                      <div className="col-12">
+                        <label className="form-label">Nombre</label>
+                        <input
+                          className={`form-control ${isDuplicate ? "is-invalid" : ""}`}
+                          value={st.name}
+                          disabled={isLocked}
+                          onChange={(e) =>
+                            handleSubtransactionChange(index, "name", e.target.value)
+                          }
+                        />
 
-                  <div className="row g-3">
-                    <div className="col-12">
-                      <label className="form-label">Nombre</label>
-                      <input
-                        className="form-control"
-                        value={st.name}
-                        onChange={(e) =>
-                          handleSubtransactionChange(index, "name", e.target.value)
-                        }
-                      />
-                    </div>
+                        {isDuplicate && (
+                          <div className="invalid-feedback">
+                            Este nombre ya existe en otra subtransacción.
+                          </div>
+                        )}
+                      </div>
 
-                    <div className="col-12">
-                      <label className="form-label">Descripción</label>
-                      <input
-                        className="form-control"
-                        value={st.description}
-                        onChange={(e) =>
-                          handleSubtransactionChange(index, "description", e.target.value)
-                        }
-                      />
-                    </div>
+                      <div className="col-12">
+                        <label className="form-label">Descripción</label>
+                        <input
+                          className="form-control"
+                          value={st.description}
+                          onChange={(e) =>
+                            handleSubtransactionChange(index, "description", e.target.value)
+                          }
+                        />
+                      </div>
 
-                    <div className="col-6">
-                      <label className="form-label">Tipo de Transacción</label>
-                      <select
-                        className="form-select"
-                        value={st.transaction_type_id}
-                        onChange={(e) =>
-                          handleSubtransactionChange(
-                            index,
-                            "transaction_type_id",
-                            Number(e.target.value)
-                          )
-                        }
-                      >
-                        <option value={-1}>Gasto</option>
-                        <option value={0}>Ahorro</option>
-                        <option value={1}>Ingreso</option>
-                      </select>
-                    </div>
+                      <div className="col-6">
+                        <label className="form-label">Tipo de Transacción</label>
+                        <select
+                          className="form-select"
+                          value={st.transaction_type_id}
+                          disabled={isLocked}
+                          onChange={(e) =>
+                            handleSubtransactionChange(
+                              index,
+                              "transaction_type_id",
+                              Number(e.target.value)
+                            )
+                          }
+                        >
+                          <option value={-1}>Gasto</option>
+                          <option value={0}>Ahorro</option>
+                          <option value={1}>Ingreso</option>
+                        </select>
+                      </div>
 
-                    <div className="col-6">
-                      <label className="form-label">Monto Aproximado</label>
-                      <input
-                        className="form-control"
-                        type="number"
-                        value={st.ideal_amount}
-                        onChange={(e) =>
-                          handleSubtransactionChange(index, "ideal_amount", e.target.value)
-                        }
-                      />
+                      <div className="col-6">
+                        <label className="form-label">Monto Aproximado</label>
+                        <input
+                          className="form-control"
+                          type="number"
+                          value={st.ideal_amount}
+                          onChange={(e) =>
+                            handleSubtransactionChange(index, "ideal_amount", e.target.value)
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
+      {/* Form Errors */}
+      {formErrors.length > 0 && (
+        <div className="alert alert-danger">
+          <h6 className="alert-heading mb-2">Por favor corrige los siguientes errores:</h6>
+          <ul className="mb-0">
+            {formErrors.map((err, idx) => (
+              <li key={idx}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* SUBMIT */}
       <div className="d-grid gap-2">
-        <button className="btn btn-primary btn-lg" onClick={handleSubmit}>
+        <button 
+          className="btn btn-primary btn-lg" 
+          onClick={handleSubmit}
+          disabled={hasDuplicateNames}
+          >
           Enviar
         </button>
         <div className="text-body-secondary small">
