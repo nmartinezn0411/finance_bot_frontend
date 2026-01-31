@@ -9,6 +9,7 @@ export default defineConfig({
     strictPort: true,    // fail if 5173 is taken instead of switching ports
     allowedHosts: [
       "bethany-wasteless-shasta.ngrok-free.dev",
+      "komodo.tail0c553b.ts.net"
       // "localhost",
     ],
   },
