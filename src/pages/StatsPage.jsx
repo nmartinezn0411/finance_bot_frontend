@@ -549,6 +549,7 @@ function StatCard({ title, value, icon: Icon, color, trend, subtitle }) {
 
 export default function StatsPage({ bootstrap }) {
   const stats = bootstrap?.monthlyStatistics;
+  console.log("ejemplo");
 
   if (!stats) {
     return (

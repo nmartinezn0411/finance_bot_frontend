@@ -11,7 +11,6 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
     amount: tx.amount ?? "",
     transaction_date: tx.date ?? tx.transaction_date ?? "",
     description: tx.description ?? "",
-    raw_text: tx.raw_text ?? "",
   });
 
   const selectedSubcat = subcategories.find(
@@ -137,7 +136,6 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
                     amount: Number(draft.amount),
                     transaction_date: draft.transaction_date || null,
                     description: draft.description || null,
-                    raw_text: draft.raw_text || null,
                   });
                   setIsEditing(false);
                 }}

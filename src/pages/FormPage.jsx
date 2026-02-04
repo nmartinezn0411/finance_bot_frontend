@@ -1,9 +1,6 @@
 // src/pages/FormPage.jsx
 import { useEffect, useMemo, useState } from "react";
 
-// Debug
-import { logDebug, DebugPanel } from "../utils/debug";
-
 // Constants / helpers
 import { getTransactionTypeLabel } from "../utils/constants";
 import { badgeClassByType } from "../utils/functions";
@@ -77,7 +74,6 @@ export default function FormPage({ bootstrap }) {
     amount: "",
     transaction_date: "",
     description: "",
-    raw_text: "",
   });
 
   // Duplicate validation for subtransaction names
@@ -90,7 +86,7 @@ export default function FormPage({ bootstrap }) {
   // Telegram + Prefill
   useEffect(() => {
     const webApp = window.Telegram?.WebApp;
-    logDebug("webApp : " + JSON.stringify(webApp));
+    console.log("webApp : " + JSON.stringify(webApp));
 
     // Prefill user form
     setUserForm((prev) => ({
@@ -176,7 +172,6 @@ export default function FormPage({ bootstrap }) {
       amount: Number(txDraft.amount),
       transaction_date: txDraft.transaction_date || null,
       description: txDraft.description || null,
-      raw_text: txDraft.raw_text || null,
     };
 
     // UI list
@@ -199,7 +194,6 @@ export default function FormPage({ bootstrap }) {
       amount: "",
       transaction_date: "",
       description: "",
-      raw_text: "",
     });
   };
 
@@ -266,7 +260,7 @@ export default function FormPage({ bootstrap }) {
       telegram_user_id: userForm.telegram_user_id,
     };
 
-    logDebug("SENDING DELETE PAYLOAD: " + JSON.stringify(payload, null, 2));
+    console.log("SENDING DELETE PAYLOAD: " + JSON.stringify(payload, null, 2));
     webApp.sendData(JSON.stringify(payload));
     webApp.close();
   };
@@ -327,7 +321,7 @@ export default function FormPage({ bootstrap }) {
 
     if (errors.length > 0) {
       setFormErrors(errors);
-      logDebug("VALIDATION ERRORS:\n" + errors.join("\n"));
+      console.log("VALIDATION ERRORS:\n" + errors.join("\n"));
       return;
     }
 
@@ -349,7 +343,7 @@ export default function FormPage({ bootstrap }) {
       payload.TransactionsOps = transactionsOps;
     }
 
-    logDebug("SENDING PAYLOAD: " + JSON.stringify(payload, null, 2));
+    console.log("SENDING PAYLOAD: " + JSON.stringify(payload, null, 2));
     webApp.sendData(JSON.stringify(payload));
     webApp.close();
   };
@@ -480,7 +474,7 @@ export default function FormPage({ bootstrap }) {
               onClick={handleAddSubtransaction}
               disabled={subtransactions.length >= 7} // your current limit
             >
-              Add
+              Agregar
             </button>
           </div>
 
@@ -502,7 +496,7 @@ export default function FormPage({ bootstrap }) {
                           {getTransactionTypeLabel(st.transaction_type_id)}
                         </span>
 
-                        {isLocked && <span className="badge text-bg-secondary">Inicial</span>}
+                        {isLocked && <span className="badge text-bg-secondary">Fijo</span>}
                       </div>
 
                       {subtransactions.length > 1 && (
@@ -512,7 +506,7 @@ export default function FormPage({ bootstrap }) {
                           onClick={() => handleRemoveSubtransaction(index)}
                           disabled={isLocked}
                         >
-                          Remove
+                          Eliminar
                         </button>
                       )}
                     </div>
@@ -579,8 +573,8 @@ export default function FormPage({ bootstrap }) {
         <div className="card mb-3">
           <div className="card-body">
             <div className="d-flex align-items-center justify-content-between">
-              <SectionTitle title="Transacciones del Mes" subtitle="CRUD local. Se guarda al enviar el formulario." />
-              <span className="badge text-bg-secondary">Ops pendientes: {transactionsOps.length}</span>
+              <SectionTitle title="Transacciones del Mes" subtitle="Transacciones se mandan al enviar el formulario."/>
+              <span className="badge text-bg-secondary">Transacciones: {transactionsOps.length}</span>
             </div>
 
             {/* Create */}
@@ -595,7 +589,7 @@ export default function FormPage({ bootstrap }) {
                     value={txDraft.transaction_subcategory_id}
                     onChange={(e) => setTxDraft((p) => ({ ...p, transaction_subcategory_id: e.target.value }))}
                   >
-                    <option value="">Select...</option>
+                    <option value="">Seleccionar...</option>
                     {transactionSubcategories.map((sc) => (
                       <option key={sc.id} value={sc.id}>
                         {sc.name}
@@ -633,15 +627,6 @@ export default function FormPage({ bootstrap }) {
                   />
                 </div>
 
-                <div className="col-12 col-md-6">
-                  <label className="form-label">Raw text</label>
-                  <input
-                    className="form-control"
-                    value={txDraft.raw_text}
-                    onChange={(e) => setTxDraft((p) => ({ ...p, raw_text: e.target.value }))}
-                  />
-                </div>
-
                 <div className="col-12">
                   <button
                     type="button"
@@ -649,7 +634,7 @@ export default function FormPage({ bootstrap }) {
                     disabled={!txDraft.transaction_subcategory_id || !Number(txDraft.amount)}
                     onClick={handleTxAdd}
                   >
-                    Add
+                    Agregar
                   </button>
                 </div>
               </div>
@@ -721,8 +706,6 @@ export default function FormPage({ bootstrap }) {
           Al enviar, se manda la data a Telegram Finance Bot y se cierra el WebApp Form.
         </div>
       </div>
-
-      <DebugPanel />
     </div>
   );
 }

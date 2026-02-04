@@ -11,7 +11,6 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
     amount: tx.amount ?? "",
     transaction_date: tx.date ?? tx.transaction_date ?? "",
     description: tx.description ?? "",
-    raw_text: tx.raw_text ?? "",
   });
 
   const selectedSubcat = subcategories.find(
@@ -39,7 +38,9 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
             )}
 
             {tx.id == null && (
-              <span className="badge text-bg-secondary">Pendiente</span>
+              <span className="badge text-bg-secondary me-2">
+                Pendiente
+              </span>
             )}
           </div>
 
@@ -50,7 +51,7 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
                 className="btn btn-outline-primary btn-sm"
                 onClick={() => setIsEditing(true)}
               >
-                Edit
+                Editar
               </button>
             )}
 
@@ -59,7 +60,7 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
               className="btn btn-outline-danger btn-sm"
               onClick={() => onDelete(tx)}
             >
-              {tx.id == null ? "Remove" : "Delete"}
+              {tx.id == null ? "Remover" : "Eliminar"}
             </button>
           </div>
         </div>
@@ -125,34 +126,6 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
 
           {isEditing && (
             <div className="col-12 d-flex gap-2">
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                disabled={!canSave || tx.id == null} // updates only for existing
-                onClick={() => {
-                  onUpdate(tx.id, {
-                    transaction_subcategory_id: Number(
-                      draft.transaction_subcategory_id
-                    ),
-                    amount: Number(draft.amount),
-                    transaction_date: draft.transaction_date || null,
-                    description: draft.description || null,
-                    raw_text: draft.raw_text || null,
-                  });
-                  setIsEditing(false);
-                }}
-              >
-                Save
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-sm"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </button>
-
               {tx.id == null && (
                 <span className="text-body-secondary small align-self-center">
                   * Las nuevas se guardan al enviar el formulario.
