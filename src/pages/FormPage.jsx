@@ -6,7 +6,7 @@ import { getTransactionTypeLabel } from "../utils/constants";
 import { badgeClassByType } from "../utils/functions";
 
 // Components
-import { TransactionCard } from "../user_info/cards"; // or "../components/form/TransactionCard" if you moved it
+import { TransactionCard } from "../components/form/TransactionCard"; 
 
 const normalizeName = (name) => name?.trim().toLowerCase();
 

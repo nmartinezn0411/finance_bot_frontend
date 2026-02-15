@@ -49,7 +49,7 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
                 className="btn btn-outline-primary btn-sm"
                 onClick={() => setIsEditing(true)}
               >
-                Edit
+                Editar
               </button>
             )}
 
@@ -58,7 +58,7 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
               className="btn btn-outline-danger btn-sm"
               onClick={() => onDelete(tx)}
             >
-              {tx.id == null ? "Remove" : "Delete"}
+              {tx.id == null ? "Remover" : "Eliminar"}
             </button>
           </div>
         </div>
@@ -129,10 +129,8 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
                 className="btn btn-success btn-sm"
                 disabled={!canSave || tx.id == null} // updates only for existing
                 onClick={() => {
-                  onUpdate(tx.id, {
-                    transaction_subcategory_id: Number(
-                      draft.transaction_subcategory_id
-                    ),
+                  onUpdate({ id: tx.id, client_id: tx.client_id }, {
+                    transaction_subcategory_id: Number(draft.transaction_subcategory_id),
                     amount: Number(draft.amount),
                     transaction_date: draft.transaction_date || null,
                     description: draft.description || null,

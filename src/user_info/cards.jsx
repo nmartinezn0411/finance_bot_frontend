@@ -38,9 +38,7 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
             )}
 
             {tx.id == null && (
-              <span className="badge text-bg-secondary me-2">
-                Pendiente
-              </span>
+              <span className="badge text-bg-secondary">Pendiente</span>
             )}
           </div>
 
@@ -126,6 +124,31 @@ export function TransactionCard({ tx, subcategories, onUpdate, onDelete }) {
 
           {isEditing && (
             <div className="col-12 d-flex gap-2">
+              <button
+                type="button"
+                className="btn btn-success btn-sm"
+                disabled={!canSave || tx.id == null} // updates only for existing
+                onClick={() => {
+                  onUpdate({ id: tx.id, client_id: tx.client_id }, {
+                    transaction_subcategory_id: Number(draft.transaction_subcategory_id),
+                    amount: Number(draft.amount),
+                    transaction_date: draft.transaction_date || null,
+                    description: draft.description || null,
+                  });
+                  setIsEditing(false);
+                }}
+              >
+                Save
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </button>
+
               {tx.id == null && (
                 <span className="text-body-secondary small align-self-center">
                   * Las nuevas se guardan al enviar el formulario.
