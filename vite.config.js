@@ -6,12 +6,13 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   const frontendUrl = env.VITE_FRONTEND_URL
+  const port = env.VITE_FRONTEND_PORT
 
   return {
     plugins: [react()],
     server: {
       host: true,
-      port: 5173,
+      port: port,
       strictPort: true,
       allowedHosts: frontendUrl ? [frontendUrl] : true, 
     },
