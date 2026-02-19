@@ -10,7 +10,7 @@ RUN npm ci
 COPY . .
 
 # Vite port
-EXPOSE 5173
+EXPOSE 8080
 
 # IMPORTANT: bind to 0.0.0.0 so Komodo/host can reach it
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "8080"]
