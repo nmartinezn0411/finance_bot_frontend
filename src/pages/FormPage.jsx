@@ -467,12 +467,12 @@ export default function FormPage({ bootstrap }) {
       <div className="card mb-3">
         <div className="card-body">
           <div className="d-flex align-items-center justify-content-between">
-            <SectionTitle title="Tipo de Subtransacciones" subtitle="Máximo 5. Puedes agregar o eliminar." />
+            <SectionTitle title="Tipo de Subtransacciones" subtitle="Máximo 20. Puedes agregar o eliminar." />
             <button
               type="button"
               className="btn btn-outline-primary btn-sm"
               onClick={handleAddSubtransaction}
-              disabled={subtransactions.length >= 7} // your current limit
+              disabled={subtransactions.length >= 20} // your current limit
             >
               Agregar
             </button>
